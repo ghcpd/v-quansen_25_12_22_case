@@ -1,0 +1,8 @@
+{
+  "name": " Ada Lovelace ",
+  "email": "ADA@example.COM",
+  "interests": [" math ", "computing"],
+  "addresses": [
+    {"city": "London", "country": "UK"}
+  ]
+}
