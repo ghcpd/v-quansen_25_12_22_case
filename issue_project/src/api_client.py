@@ -38,8 +38,9 @@ def normalize_profile(raw_profile: Dict[str, Any]) -> Dict[str, Any]:
     """
     name = (raw_profile.get("name") or "").strip()
 
-    # BUG: lower() on None when email is missing -> classic null pointer error.
-    email = raw_profile.get("email").lower()  # type: ignore[union-attr]
+    # Make email robust: treat missing/None as unknown and normalize to lowercase when present.
+    raw_email = raw_profile.get("email")
+    email = raw_email.lower() if isinstance(raw_email, str) and raw_email else "unknown@example.com"
 
     # Remove falsy entries and trim whitespace.
     interests: List[str] = [interest.strip() for interest in raw_profile.get("interests", []) if interest]
