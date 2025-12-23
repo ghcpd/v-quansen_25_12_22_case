@@ -1,0 +1,131 @@
+User: You are an experienced Python engineer working on a small training project that demonstrates classic runtime crash patterns (null-like attribute access and list index out of range) when consuming third-party-style data.
+
+Your goal is to diagnose and fix the crash(es) so that all tests pass, while keeping the code simple and educational.
+
+**Tech Stack & Environment**
+
+- Language: Python 3.x (Windows 11 friendly)
+- Test runner: `pytest`
+- Dependencies: from requirements.txt
+
+**Project Structure**
+
+- README.md
+- KNOWN_ISSUE.md
+- requirements.txt
+- sample_response.json
+- __init__.py
+- api_client.py
+- data_processor.py
+- test_api_client.py
+- test_data_processor.py
+
+Ignore `.pytest_cache/` and `__pycache__/` directories; they are generated artifacts.
+
+**High-Level Behavior**
+
+- `api_client` simulates a third-party API that returns user profile data, including name, email, interests, and addresses.
+- `data_processor` consumes that data and produces a compact summary (name, email, primary_interest, city).
+- The code is intentionally under-defensive: certain edge cases (missing/incomplete data) trigger runtime exceptions instead of graceful degradation.
+- There are more tests that pass than fail: most “happy path” flows are correct, but at least one or two tests currently fail due to crashes (exceptions) when data is missing or empty.
+
+**Crash / Exception Scenario**
+
+- Some tests in test_data_processor.py exercise edge cases where:
+  - Email may be `None` or missing.
+  - The `interests` list may be empty.
+- Under these conditions, the current implementation raises runtime exceptions (such as attribute access on `None` or indexing into an empty list) instead of degrading gracefully.
+- The failing test cases are specifically designed to:
+  - Demonstrate how unsafe assumptions about third-party data cause crashes.
+  - Assert a “graceful” behavior instead of an exception (e.g., fallback values, `None`, or other safe outputs).
+
+**Your Task**
+
+1. Analyze the existing code and tests to:
+   - Identify exactly which function(s) and line(s) are causing the crash or exception.
+   - Understand what behavior the tests expect in the edge cases (from the test assertions and comments).
+2. Modify the implementation to:
+   - Eliminate the crash(es) related to null-like values and empty lists.
+   - Preserve all existing passing behavior and public function signatures.
+   - Make the code robust against missing/incomplete data from the simulated third-party API.
+3. Ensure:
+   - All existing tests in tests pass.
+   - No new tests are added and no existing tests are removed or weakened.
+   - The code remains small, readable, and suitable for intermediate-level training.
+
+Do not change `requirements.txt` or rely on heavy new dependencies; use only the standard library (and `pytest` for tests).
+
+**How to Run**
+
+From the issue_project directory:
+
+- Install dependencies: `python -m pip install -r requirements.txt`
+- Run tests: `pytest`
+
+Do not alter the problem into something more complex (e.g., no async, no external services); the focus is on clean, defensive handling of nullable/missing data and empty collections in a small, test-driven codebase.
+
+GitHub Copilot: Running the test suite to see which tests fail and capture error traces. I'll run pytest now.
+
+Ran terminal command: cd c:\Users\v-quansenwen\work\bug-related\runtime-error-1222\oswe-mini-m23a2s165\issue_project && pytest -q
+
+Retrying tests using the POSIX-style path for the workspace.
+
+Ran terminal command: cd /c/Users/v-quansenwen/work/bug-related/runtime-error-1222/oswe-mini-m23a2s165/issue_project && pytest -q
+
+pytest isn't on the PATH here; running tests via python -m pytest.
+
+Ran terminal command: cd /c/Users/v-quansenwen/work/bug-related/runtime-error-1222/oswe-mini-m23a2s165/issue_project && python -m pytest -q
+
+I'll inspect the two modules mentioned in the failing traces to locate the exact offending lines.
+
+Read [](file:///c%3A/Users/v-quansenwen/work/bug-related/runtime-error-1222/oswe-mini-m23a2s165/issue_project/src/api_client.py)
+
+I'll open the tests for data_processor to confirm the expected fallback behavior.
+
+Read [](file:///c%3A/Users/v-quansenwen/work/bug-related/runtime-error-1222/oswe-mini-m23a2s165/issue_project/tests/test_data_processor.py)
+
+Now I'll open src/data_processor.py to fix the empty-interests indexing issue.
+
+Read [](file:///c%3A/Users/v-quansenwen/work/bug-related/runtime-error-1222/oswe-mini-m23a2s165/issue_project/src/data_processor.py)
+
+Applying two small, targeted fixes: make email normalization resilient and avoid indexing into an empty interests list. I'll update both files and then run the tests.
+
+Using "Multi-Replace String in Files"
+
+
+```
+
+```
+
+```
+
+```
+Running the test suite to verify the fixes.
+
+Ran terminal command: cd /c/Users/v-quansenwen/work/bug-related/runtime-error-1222/oswe-mini-m23a2s165/issue_project && python -m pytest tests/test_data_processor.py::test_graceful_degradation_on_missing_email_and_interests -q
+
+Now running the full test suite.
+
+Ran terminal command: cd /c/Users/v-quansenwen/work/bug-related/runtime-error-1222/oswe-mini-m23a2s165/issue_project && python -m pytest -q
+
+Findings: two runtime crashes were caused by unsafe handling of nullable and empty third‑party data — (1) calling lower() on a possibly None email, and (2) indexing interests[0] when the interests list can be empty. I fixed both with minimal, readable changes and ran the full test suite.
+
+What I changed
+- api_client.py
+  - normalize_profile: treat missing/None/empty email as "unknown@example.com" and safely normalize (strip + lower).
+- data_processor.py
+  - summarize_user_profile: return None for primary_interest when interests list is empty (avoid IndexError).
+
+Why
+- Preserves existing public behavior and signatures.
+- Matches test expectations for graceful degradation (fallback email and None primary_interest).
+- Keeps code small and easy to read for training purposes.
+
+Tests
+- All tests now pass: 9 passed, 0 failed.
+
+If you want
+- I can add inline comments or docstrings explaining the defensive choices.
+- Or prepare a short commit message / changelog entry.
+
+Would you like me to open a PR or add more defensive checks (e.g., email format validation)?
