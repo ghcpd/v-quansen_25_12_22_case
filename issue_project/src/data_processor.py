@@ -16,7 +16,7 @@ def summarize_user_profile(raw_profile: Dict[str, Any]) -> Dict[str, Optional[st
 
     # BUG: indexes into interests[0] even when the list is empty, causing
     # IndexError / list index out of range when the API omits interests.
-    primary_interest = profile["interests"][0]
+    primary_interest = profile["interests"][0] if profile["interests"] else None
 
     addresses = profile.get("addresses") or []
     city = addresses[0].get("city") if addresses else None
