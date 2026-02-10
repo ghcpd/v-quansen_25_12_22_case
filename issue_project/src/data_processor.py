@@ -14,12 +14,12 @@ def summarize_user_profile(raw_profile: Dict[str, Any]) -> Dict[str, Optional[st
     """Summarize a profile into a small, display-friendly shape."""
     profile = normalize_profile(raw_profile)
 
-    # BUG: indexes into interests[0] even when the list is empty, causing
-    # IndexError / list index out of range when the API omits interests.
-    primary_interest = profile["interests"][0]
+    # Safely pick primary interest or fall back to None when missing/empty.
+    interests = profile.get("interests") or []
+    primary_interest = interests[0] if interests else None
 
     addresses = profile.get("addresses") or []
-    city = addresses[0].get("city") if addresses else None
+    city = addresses[0].get("city") if addresses and isinstance(addresses[0], dict) else None
 
     return {
         "name": profile.get("name"),
